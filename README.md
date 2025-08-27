@@ -70,7 +70,7 @@ Projeye özgü semboller `Kconfig` içinde tanımlıdır:
 | `CONFIG_APP_DEV_BUILD`    | bool  | –          | Geliştirici günlüğü (log seviyesi **DBG**).  |
 | `CONFIG_APP_LOG_WITH_FILELINE` | bool | –     | Log çıktısına `dosya:Satır` bilgisini ekler. |
 | `CONFIG_CUSTOM_UART_ENABLE`| bool | `y`        | UART özelleştirmelerini etkinleştirir.        |
-| `CONFIG_CUSTOM_UART_RX_STACK_SIZE` | int | `64` | UART RX iş parçacığı/yığın boyutu ayarı (*not: `depends on BUZZER_ENABLE` ifadesi Kconfig’te mevcut — gerekmiyorsa kaldırılabilir/uyarlanabilir*). |
+| `CONFIG_CUSTOM_UART_RX_STACK_SIZE` | int | `64` | UART RX iş parçacığı/yığın boyutu ayarı . |
 
 > `prj.conf` örneği zaten depo içinde mevcut ve aşağıdaki gibi temel ayarları açar:
 >
