@@ -259,10 +259,11 @@ Bu altyapı, Zephyr’in **UART Async** sürücüsünü sağlayan her platformda
 ```powershell
 PS: zephyr-async-uart\test> python zephyr_uart_testbench.py --port COM7 --send "Hello ASYNC UART"
 
+PS C:\Users\Admin\Developer\GitHub\private\zephyr-async-uart\test>  python zephyr_uart_testbench.py --port COM7 --send "Hello ASYNC UART"
 [TX] 16B -> Frame 20B: AA 10 48 65 6C 6C 6F 20 41 53 59 4E 43 20 55 41 52 54 69 A5
 [INFO] RX running. Press Ctrl+C to stop.
-[RX] Frame: LEN=16  CRC OK  RAW=AA 10 48 65 6C 6C 6F 20 41 53 59 4E 43 20 55 41 52 54 69 A5
-[RX] DATA (text): 'Hello ASYNC UART'
+[RX] Frame: LEN=24  CRC OK  RAW=AA 18 54 68 69 73 20 69 73 20 61 6E 20 65 63 68 6F 20 6D 65 73 73 61 67 65 21 71 35
+[RX] DATA (text): 'This is an echo message!'
 ```
 ---
 ## Nucleo F070RB Notları

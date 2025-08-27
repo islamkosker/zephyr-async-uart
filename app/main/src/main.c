@@ -30,7 +30,8 @@ static void uart_rx_cb(void *ctx)
     LOG_INFO("OK. PACKET LEN:%d", p.pkt.len);
     k_msleep(1000);
     LOG_INFO("ECHO.");
-    uart_io_send_frame(p.pkt.data, p.pkt.len, K_MSEC(200));
+    const char echo[] = "This is an echo message!";
+    uart_io_send_frame((const uint8_t *)echo, strlen(echo), K_MSEC(200));
 }
 
 int main(void)
