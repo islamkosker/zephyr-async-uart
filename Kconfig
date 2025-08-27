@@ -14,10 +14,21 @@ config CUSTOM_UART_ENABLE
 
 config CUSTOM_UART_RX_STACK_SIZE
     int "UART_RX_STACK_SIZE"
-    depends on BUZZER_ENABLE
+    depends on CUSTOM_UART_ENABLE
     default 64
     range 0 2048  # If you want to set a higher volume, increase it.
 
+config CUSTOM_UART_RX_CHUNK_SIZE
+    int "UART_RX_CHUNK_SIZE"
+    depends on CUSTOM_UART_ENABLE
+    default 64
+    range 0 2048  # If you want to set a higher volume, increase it.
+
+config CUSTOM_UART_SYNC_BYTE
+    hex "UART SYNC BYTE"
+    depends on CUSTOM_UART_ENABLE
+    default 0xAA         
+    range 0x00 0xFF 
 
 endmenu #Custom UART Config"
 

@@ -2,32 +2,37 @@
 #include <zephyr/sys/util.h>      // BUILD_ASSERT()
 #include <zephyr/sys/byteorder.h> // sys_put_be16, sys_get_be16
 
+/* EDIIT YOUR APPICATION REQUIREMENTS*/
 
-#ifndef UART_MAX_PACKET_SIZE
-#define UART_MAX_PACKET_SIZE   64
+#ifndef CONFIG_CUSTOM_UART_RX_STACK_SIZE
+#define CONFIG_CUSTOM_UART_RX_STACK_SIZE        64
 #endif
 
-#ifndef UART_RX_CHUNK_LEN
-#define UART_RX_CHUNK_LEN      64    /* DMA/ping-pong section */
+#ifndef CONFIG_CUSTOM_UART_RX_CHUNK_SIZE
+#define CONFIG_CUSTOM_UART_RX_CHUNK_SIZE        64 /* DMA/ping-pong section */
 #endif
 
-#ifndef UART_RB_SZ
-#define UART_RB_SZ             (UART_RX_CHUNK_LEN * 4)
+#ifndef CONFIG_CUSTOM_UART_SYNC_BYTE
+#define CONFIG_CUSTOM_UART_SYNC_BYTE            0xAA
 #endif
 
 #ifndef UART_MSGQ_DEPTH
-#define UART_MSGQ_DEPTH        4
+#define UART_MSGQ_DEPTH                         4
 #endif
 
-#ifndef UART_SYNC_BYTE
-#define UART_SYNC_BYTE         0xAA
+#ifndef UART_CRC_INT
+#define UART_CRC_INT                            0xFFFF
 #endif
 
-#ifndef UART_CRC_INT           
-#define UART_CRC_INT           0xFFFF
-#endif
+#define UART_MAX_PACKET_SIZE                    CONFIG_CUSTOM_UART_RX_STACK_SIZE
+#define UART_RX_CHUNK_LEN                       CONFIG_CUSTOM_UART_RX_CHUNK_SIZE
+#define UART_RB_SZ                              (UART_RX_CHUNK_LEN * 4)
+#define UART_SYNC_BYTE                          CONFIG_CUSTOM_UART_SYNC_BYTE
 
-enum { SYNC_BYTE = UART_SYNC_BYTE };
+enum
+{
+    SYNC_BYTE = UART_SYNC_BYTE
+};
 
 /* segment config*/
 
@@ -58,24 +63,23 @@ BUILD_ASSERT(PAYLOAD_MAX > 0, "PAYLOAD_MAX must be > 0");
 #define FRAME_OVERHEAD_BYTES (1u /*SYNC*/ + 1u /*LEN*/ + 2u /*CRC*/)
 #define FRAME_MAX_TOTAL (FRAME_OVERHEAD_BYTES + UART_MAX_PACKET_SIZE)
 
-
 static inline void seg_hdr_write(uint8_t *dst, uint8_t typ, uint8_t xid,
-    uint16_t total, uint16_t offset, uint8_t clen)
+                                 uint16_t total, uint16_t offset, uint8_t clen)
 {
-/* dst en az SEG_HDR_SIZE kadar olmalı */
-dst[0] = typ;
-dst[1] = xid;
-sys_put_be16(total, &dst[2]);  /* total_be */
-sys_put_be16(offset, &dst[4]); /* offset_be */
-dst[6] = clen;
+    /* dst en az SEG_HDR_SIZE kadar olmalı */
+    dst[0] = typ;
+    dst[1] = xid;
+    sys_put_be16(total, &dst[2]);  /* total_be */
+    sys_put_be16(offset, &dst[4]); /* offset_be */
+    dst[6] = clen;
 }
 
 static inline void seg_hdr_read(const uint8_t *src, uint8_t *typ, uint8_t *xid,
-    uint16_t *total, uint16_t *offset, uint8_t *clen)
+                                uint16_t *total, uint16_t *offset, uint8_t *clen)
 {
-*typ = src[0];
-*xid = src[1];
-*total = sys_get_be16(&src[2]);
-*offset = sys_get_be16(&src[4]);
-*clen = src[6];
+    *typ = src[0];
+    *xid = src[1];
+    *total = sys_get_be16(&src[2]);
+    *offset = sys_get_be16(&src[4]);
+    *clen = src[6];
 }

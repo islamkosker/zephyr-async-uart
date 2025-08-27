@@ -15,7 +15,7 @@ typedef struct
 
 typedef struct
 {
-    uint8_t id;
+    uint8_t samefield; // change for your protocol
     uart_pkt_t pkt;
 } uart_payload_t;
 
@@ -27,7 +27,10 @@ static void uart_rx_cb(void *ctx)
     uart_payload_t p = {0};
     p.pkt = *(uart_pkt_t *)ctx;
 
-    LOG_INFO("OK PACKET LEN:%d", p.pkt.len);
+    LOG_INFO("OK. PACKET LEN:%d", p.pkt.len);
+    k_msleep(1000);
+    LOG_INFO("ECHO.");
+    uart_io_send_frame(p.pkt.data, p.pkt.len, K_MSEC(200));
 }
 
 int main(void)
