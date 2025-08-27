@@ -19,6 +19,7 @@ Katmanlı mimari sayesinde Zephyr’in **UART Async API**’sini destekleyen **U
   - [Yöntem 1: west](#yöntem-1-west)
   - [Yöntem 2: PowerShell betiği (`scripts/bulid.ps1`)](#yöntem-2-powershell-betiği-scriptsbulidps1)
 - [Donanım Uyumluluğu ve Port Etme](#donanım-uyumluluğu-ve-port-etme)
+- [ASYNC UART TEST](#test)
 - [Nucleo F070RB Notları](#nucleo-f070rb-notları)
 - [Lisans](#lisans)
 
@@ -124,6 +125,9 @@ Aşağıdaki makrolar **varsayılanlarıyla** gelir. İhtiyacınıza göre `uart
 ## Çerçeve (Frame) ve Paketleme
 
 **Temel çerçeve formatı:**
+
+> CRC ayrıntıları için `app/peripherals/uart/include/crc16_ccitt.h` dosyasına bakınız
+
 
 ```
 +--------+-------+-------------+---------+
@@ -238,7 +242,20 @@ Bu altyapı, Zephyr’in **UART Async** sürücüsünü sağlayan her platformda
 4. **Buffer Boyutları**: Gerekirse `uart_cfg.h` içindeki `UART_RX_CHUNK_LEN`, `UART_RB_SZ` ve `UART_MAX_PACKET_SIZE` değerlerini uygulamanıza göre ayarlayın.
 
 ---
-## Örnek kullanım 
+## Test 
+
+> **Test Ortamı**
+>
+> | Bileşen                | Sürüm / Model           |
+> |------------------------|------------------------|
+> | USB-UART Dönüştürücü   | CP2102                 |
+> | Geliştirme Kartı       | Nucleo-F070RB          |
+> | Python                 | 3.13.5                 |
+> | Zephyr                 | 4.1.99                  |
+> | Zephyr-SDK             | 0.17.2                 |
+
+> `test/zephyr_uart_testbench.py` dosyasını aşağıdaki komutla çalıştırarak bilgisayarınıza bağlı UART kartı üzerinden MCU'ya mesaj gönderip alabilirsiniz. Ekrandaki loglar aşağıdaki gibi görünecektir:
+
 ```powershell
 PS: zephyr-async-uart\test> python zephyr_uart_testbench.py --port COM7 --send "Hello ASYNC UART"
 
