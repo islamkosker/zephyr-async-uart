@@ -1,0 +1,24 @@
+menu "App options"
+config APP_DEV_BUILD
+	bool "Enable development build features"
+config APP_LOG_WITH_FILELINE
+	bool "Include file:line in logs"
+endmenu #App options"
+
+
+menu "Custom UART Config"
+
+config CUSTOM_UART_ENABLE
+    bool "Enable customization"
+    default y
+
+config CUSTOM_UART_RX_STACK_SIZE
+    int "UART_RX_STACK_SIZE"
+    depends on BUZZER_ENABLE
+    default 64
+    range 0 2048  # If you want to set a higher volume, increase it.
+
+
+endmenu #Custom UART Config"
+
+source "Kconfig.zephyr"

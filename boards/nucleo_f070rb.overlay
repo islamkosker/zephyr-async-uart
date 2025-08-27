@@ -1,0 +1,35 @@
+/*
+ * Copyright (c) 2021 Seagate Technology LLC
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+&dma1 {
+	status = "okay";
+};
+
+&pinctrl {
+	usart1_tx_pa9: usart1_tx_pa9 { pinmux = <STM32_PINMUX('A', 9, AF1)>; };
+	usart1_rx_pa10: usart1_rx_pa10 { pinmux = <STM32_PINMUX('A', 10, AF1)>; };
+};
+
+&usart1 {
+	status = "okay";
+	current-speed = <115200>;
+	pinctrl-names = "default";
+    pinctrl-0 = <&usart1_tx_pa9 &usart1_rx_pa10>; // AF doğru olduğundan emin ol
+
+    dmas = <&dma1 4 (STM32_DMA_PERIPH_TX | STM32_DMA_PRIORITY_MEDIUM)>,
+           <&dma1 5 (STM32_DMA_PERIPH_RX | STM32_DMA_PRIORITY_MEDIUM)>;
+	dma-names = "tx", "rx";
+};
+
+
+
+
+/ {
+	aliases {
+		uart-com = &usart1;
+	};
+
+};

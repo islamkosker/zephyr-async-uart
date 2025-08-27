@@ -1,0 +1,17 @@
+{
+    "files.associations": {
+        ".fantomasignore": "ignore",
+        "string.h": "c",
+        "framer.h": "c",
+        "stdbool.h": "c",
+        "uart_cfg.h": "c",
+        "logger.h": "c",
+        "kernel.h": "c",
+        "io_priv.h": "c",
+        "ring_buffer.h": "c",
+        "byteorder.h": "c",
+        "uart_io.h": "c",
+        "uart_io_rx.h": "c",
+        "crc16_ccitt.h": "c"
+    }
+}
