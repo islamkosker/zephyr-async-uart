@@ -17,6 +17,7 @@ Usage examples:
   python zephyr_uart_testbench.py --port /dev/ttyUSB0 --send-hex "01 02 AA FF"
   python zephyr_uart_testbench.py --port /dev/ttyUSB0 --send-file sample.bin --xid 3
   python zephyr_uart_testbench.py --port /dev/ttyUSB0 --send-hex "00 01 ... 70B" --buffer-mode
+  python zephyr_uart_testbench.py --port /dev/ttyUSB0 --send-hex "20 0D 48 65 6C 6C 6F 20 54 4C 56 21" # 0x20=TEXT, 0x0D=13, "Hello TLV!"
 """
 
 import argparse

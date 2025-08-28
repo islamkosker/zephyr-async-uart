@@ -8,4 +8,5 @@ project(zephyr-async-uart)
 
 add_subdirectory(app/main)
 add_subdirectory(app/peripherals)
+add_subdirectory(app/tlv)
 add_subdirectory(app/utils)

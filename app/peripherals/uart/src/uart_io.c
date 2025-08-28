@@ -216,7 +216,7 @@ static void uart_handler_cb(const struct device *dev, struct uart_event *evt, vo
 
 /* ============================================ * UART TX * ============================================*/
 
-int uart_send_frame(const struct device *uart_dev, const uint8_t *payload, uint8_t len, k_timeout_t timeout)
+static int uart_send_frame(const struct device *uart_dev, const uint8_t *payload, uint8_t len, k_timeout_t timeout)
 {
     if (!uart_dev)
         return -ENODEV;
@@ -260,7 +260,7 @@ int uart_send_frame(const struct device *uart_dev, const uint8_t *payload, uint8
     return 0;
 }
 
-int uart_send_buffer(const struct device *uart_dev, const uint8_t *buf, size_t len, k_timeout_t per_frame_timeout)
+static int uart_send_buffer(const struct device *uart_dev, const uint8_t *buf, size_t len, k_timeout_t per_frame_timeout)
 {
     while (len > 0)
     {
@@ -275,7 +275,7 @@ int uart_send_buffer(const struct device *uart_dev, const uint8_t *buf, size_t l
 }
 
 /* Büyük buffer’ı küçük frame’lere böler (MAX=64). RAM: sadece küçük bir temp (64B) */
-int uart_send_large(const struct device *uart_dev, const uint8_t *buf, uint32_t len, uint8_t xfer_id)
+static int uart_send_large(const struct device *uart_dev, const uint8_t *buf, uint32_t len, uint8_t xfer_id)
 {
     uint16_t off = 0;
     uint8_t frame_payload[UART_MAX_PACKET_SIZE]; /* stack: 64 B */
@@ -303,7 +303,7 @@ int uart_send_large(const struct device *uart_dev, const uint8_t *buf, uint32_t 
 
 static void uart_rx_handler(struct k_work *work)
 {
-    frame_rx_packet_t f;
+    uart_frame_t f;
 
     while (k_msgq_get(&uart_rx_msg_q, &f, K_NO_WAIT) == 0)
     {
@@ -311,7 +311,7 @@ static void uart_rx_handler(struct k_work *work)
 
         if (rx_cb && rx_cb != NULL)
         {
-            rx_cb((void *)&f);
+            rx_cb(&f);
         }
     }
 

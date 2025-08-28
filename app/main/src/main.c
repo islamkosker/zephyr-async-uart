@@ -6,32 +6,26 @@
 LOG_MODULE_REGISTER(APP_LOG_MODULE, APP_LOG_LEVEL);
 
 #include "uart_io.h"
+#include "tlv.h"
 
-typedef struct
+static void uart_rx_cb(uart_frame_t *frame)
 {
-    uint8_t len;
-    uint8_t data[64];
-} uart_pkt_t;
-
-typedef struct
-{
-    uint8_t samefield; // change for your protocol
-    uart_pkt_t pkt;
-} uart_payload_t;
-
-static void uart_rx_cb(void *ctx)
-{
-    if (!ctx)
+    if (!frame || frame->len == 0)
         return;
 
-    uart_payload_t p = {0};
-    p.pkt = *(uart_pkt_t *)ctx;
+    tlv_packet_t tlv_pack = {0};
+    int ret = tlv_decode(&tlv_pack, frame);
+    
+    LOG_INFO("ret:%d ", ret);
 
-    LOG_INFO("OK. PACKET LEN:%d", p.pkt.len);
+    LOG_HEXDUMP_INF(tlv_pack.value, tlv_pack.len, "TLV VALUE");
+    LOG_INFO("ID:%d ", tlv_pack.id);
+    LOG_INFO("LEN:%d ", tlv_pack.len);
+
     k_msleep(1000);
-    LOG_INFO("ECHO.");
-    const char echo[] = "This is an echo message!";
-    uart_io_send_frame((const uint8_t *)echo, strlen(echo), K_MSEC(200));
+    // LOG_INFO("ECHO.");
+    // const char echo[] = "This is an echo message!";
+    // uart_io_send_frame((const uint8_t *)echo, strlen(echo), K_MSEC(200));
 }
 
 int main(void)
