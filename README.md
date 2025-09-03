@@ -140,24 +140,137 @@ Aşağıdaki makrolar **varsayılanlarıyla** gelir. İhtiyacınıza göre `uart
 - `LEN`   = izleyen **DATA** uzunluğu (byte) — **segment header dahil**.
 - `CRC16` = **CRC-16/CCITT** (init `0xFFFF`), **LEN** ve **DATA** üzerine hesaplanır (big‑endian ile gönderilir).
 
-**Büyük veri aktarımı (segment header):** DATA kısmı aşağıdaki **7 baytlık** başlıkla başlar:
-
-```
-+-----+-----+--------+--------+------+
-| typ | xid | total  | offset | clen |
-+-----+-----+--------+--------+------+
- 1B    1B     2B BE    2B BE    1B
-```
-
-- `typ`  = `SEG_TYP_DATA (0x01)`  
-- `xid`  = aktarım kimliği (uygulama seviyesinde takip için)  
-- `total`= toplam veri uzunluğu (bayt)  
-- `offset`= bu çerçevedeki parçanın **orijinal verideki** başlangıç ofseti  
-- `clen` = bu çerçevede taşınan parça uzunluğu  
-
-`uart_io_send_larg()` (dosyada bu isimle tanımlı) fonksiyonu, büyük bir buffer’ı otomatik olarak **birden çok frame**’e böler ve her frame’in DATA’sına bu header’ı ekler.
-
 ---
+
+**TLV Formatı**
+DATA(...) = TYPE + LEN + PAYLOAD şekilde oluşturulması gerekmektedir ayrıntılar için `app\tlv\include\tlv_types.h` dosyasına bakınız. 
+TLV paketleri için type alanları `tlv_id_t` enum'ları ile bildirilmiştir. TLV decode ve encode apileri örnek kullanımı aşağıdaki gibidir. 
+
+```c
+/// @brief Craete a uart frame with tlv packet
+/// @param frame out
+/// @param tlv_packet in
+/// @return
+static inline int tlv_encode(uart_frame_t *frame, const tlv_packet_t *p);
+
+// measurement değerleri şu şekilde sıralandırılmıştır 
+
+typedef struct
+{
+    uint16_t pm1p0, pm2p5, pm4p0, pm10p, co2;
+    int16_t rh, t, voc, nox;
+} measurement_sen66_t;
+
+
+void sensirion_common_uint16_t_to_bytes(const uint16_t value, uint8_t* bytes) {
+    bytes[0] = (uint8_t)(value >> 8);
+    bytes[1] = (uint8_t)value;
+}
+
+uint16_t sensirion_common_bytes_to_uint16_t(const uint8_t* bytes) {
+    return (uint16_t)bytes[0] << 8 | (uint16_t)bytes[1];
+}
+
+
+static void sen66_measurement_to_bytes(const measurement_sen66_t *m, uint8_t *bytes)
+{
+    sensirion_common_uint16_t_to_bytes(m->pm1p0, &bytes[0]);
+    sensirion_common_uint16_t_to_bytes(m->pm2p5, &bytes[2]);
+    sensirion_common_uint16_t_to_bytes(m->pm4p0, &bytes[4]);
+    sensirion_common_uint16_t_to_bytes(m->pm10p, &bytes[6]);
+    sensirion_common_uint16_t_to_bytes(m->co2, &bytes[8]);
+
+    sensirion_common_int16_t_to_bytes(m->rh, &bytes[10]);
+    sensirion_common_int16_t_to_bytes(m->t, &bytes[12]);
+    sensirion_common_int16_t_to_bytes(m->voc, &bytes[14]);
+    sensirion_common_int16_t_to_bytes(m->nox, &bytes[16]);
+
+    sen66_meas_cb(bytes);
+}
+
+
+// Measurement gönderimi; 
+static void sen66_meas_cb(uint8_t *b, size_t size)
+{
+	if (!b || size == 0 || size > TLV_MAX_VALUE_SIZE)
+	{
+		LOG_ERR("bad measurement buffer (size=%u)", (unsigned)size);
+		return;
+	}
+
+	tlv_packet_t p = {
+		.id = TLV_ID_MEASUREMENT,
+		.len = (uint8_t)size, // 18 byte: 9x int16
+	};
+
+	memcpy(p.value, b, p.len); 
+
+	uart_frame_t f = (uart_frame_t){0};
+
+	int ret = tlv_encode(&f, &p);
+	if (ret)
+	{
+		LOG_ERR("tlv_encode failed: %d", ret);
+		return;
+	}
+
+	ret = uart_io_send_frame(f.data, f.len, K_MSEC(10));
+	if (ret < 0)
+		LOG_ERR("ERROR TX: %d", ret);
+}
+
+
+```
+
+Oluşturulan TLV paketi için örnek yapı; 
+
+```
++--------+-------+-------------+
+|  TYPE  | LEN   |  value(...) |
++--------+-------+-------------+
+ 1 byte   1 byte    LEN byte
+```
+
+Diğer type'lar için de aynı şekilde paket yapısnın sıralı olduğu varsayılmaktadır. 
+
+    TLV_ID_VERSION = {major,minor}
+    TLV_ID_ERR, = {err_code}
+    TLV_ID_LED = = {0-255 brightness level}
+    TLV_ID_BUZZER = = {buzzer_mode_t}
+    TLV_ID_INFECTION_RISK = {infection_risk_state_t},
+
+```c
+typedef enum
+{
+    BUZZER_MODE_OFF,
+    BUZZER_MODE_ON,
+    BUZZER_MODE_GENERIC,
+    BUZZER_MODE_FIRE,
+    BUZZER_MODE_COUNT
+} buzzer_mode_t;
+
+typedef enum {
+    RISK_GOOD, // Green
+    RISK_MODERATE, // Yellow
+    RISK_UNHEALTHY, // Orange
+    RISK_VERY_UNHEALTHY, // Red
+    RISK_HAZARDOUS, // Purple
+    RISK_COUNT
+} infection_risk_t;
+
+
+typedef enum {
+    TREND_STABLE,
+    TREND_INCREASE,
+    TREND_DECREASE
+} infection_risk_trend_t;
+
+typedef struct {
+    infection_risk_t risk_level;
+    infection_risk_trend_t trend;
+} infection_risk_state_t;
+```
+
 
 ## Kullanım Örneği (RX Callback + Gönderim)
 

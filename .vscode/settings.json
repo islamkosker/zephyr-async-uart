@@ -3,6 +3,7 @@
     "C_Cpp.default.compilerPath": "C:/Users/Admin/Developer/sdk/zephyr/zephyr-sdk-0.17.2/arm-zephyr-eabi/bin/arm-zephyr-eabi-gcc.exe",
     "files.associations": {
         ".fantomasignore": "ignore",
+        "*.json": "java",
         "uart_io.h": "c",
         "tlv.h": "c",
         "errno.h": "c",
@@ -16,6 +17,8 @@
         "tuple": "c",
         "utility": "c",
         "uart_cfg.h": "c",
-        "string.h": "c"
+        "string.h": "c",
+        "tlv_types.h": "c",
+        "limits.h": "c"
     },
 }
